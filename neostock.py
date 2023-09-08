@@ -69,9 +69,18 @@ def tickers(bot, update):
     reply_markup = ReplyKeyboardMarkup(tickers_list, one_time_keyboard=True)
     update.message.reply_text('請選擇要查詢的股票', reply_markup=reply_markup)
 
+def receive_file(update, context):
+    user_id = str(update.message.from_user.id)
+    if update.message.document and update.message.document.mime_type == 'text/plain':
+        file = context.bot.get_file(update.message.document.file_id)
+        file.download(f"{user_id}.txt")
+        update.message.reply_text("已成功接收並儲存文件。")
+
 dispatcher.add_handler(CommandHandler('start', start))
 dispatcher.add_handler(MessageHandler(Filters.text, echo))
 dispatcher.add_handler(CommandHandler('ticker', tickers))
+dispatcher.add_handler(MessageHandler(Filters.document, receive_file))
+
 
 who = '<your chat id>'
 text = 'Neopest stocks 測試'
