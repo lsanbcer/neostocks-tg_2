@@ -1,6 +1,10 @@
 from telegram.ext import Updater
 from telegram.ext import CommandHandler, MessageHandler, Filters
 from telegram import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup
+from bs4 import BeautifulSoup
+import re
+import json
+import requests
 
 bot_token = '<your token>'
 
@@ -13,6 +17,22 @@ stock_lst = ['AAVL','ACFI','BB','BOTT','BUZZ','CHIA','CHPS','COFL','CYBU','DROO'
 
 dispatcher = updater.dispatcher
 
+def ticker_curr(ticker):
+    url = 'https://neostocks.info/'
+    response = requests.get(url=url)
+    soup = BeautifulSoup(response.text, 'html.parser')
+    script_tags = soup.find_all('script', string=re.compile("^window.__data__"))
+    for tag in script_tags:
+        string = str((tag.string)[18:])
+
+    json_s = json.loads(string)
+
+    for item in json_s['summary_data']['1d']:
+        if item['ticker'] == str(ticker):
+            curr = str(item['curr'])
+            break
+    return curr
+
 def start(bot, update):
     message = update.message
     chat = message['chat']
@@ -22,7 +42,8 @@ def echo(bot, update):
     message = update.message
     text = message.text
     if text in stock_lst:
-        update.message.reply_text(text,
+        curr = ticker_curr(text)
+        update.message.reply_text(text + '  目前價格  ' + curr,
                                 reply_markup = InlineKeyboardMarkup([[
                                     InlineKeyboardButton('Buy',
                                                         url = 'https://www.neopets.com/stockmarket.phtml?type=buy&ticker=' + text),
