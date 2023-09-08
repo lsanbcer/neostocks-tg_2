@@ -1,6 +1,6 @@
 from telegram.ext import Updater
 from telegram.ext import CommandHandler, MessageHandler, Filters
-from telegram import InlineKeyboardMarkup, InlineKeyboardButton
+from telegram import InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup
 
 bot_token = '<your token>'
 
@@ -40,8 +40,17 @@ def echo(bot, update):
         text = '請輸入正確指令'
         update.message.reply_text(text = text)
 
+def tickers(bot, update):
+    tickers_list = [['AAVL','ACFI','BB','BOTT'],['BUZZ','CHIA','CHPS','COFL'],['CYBU','DROO','EEEEE','FAER'],
+             ['FISH','HELT','HUW','KAUF'],['KBAT','KSON','LDSC','LUPE'],['MPC','MYNC','NAKR','NATN'],
+             ['PDSS','PEOP','POWR','SHRX'],['SKBD','SKEI','SMUG','SSS'],['STFP','SWNC','TAG','TNAH'],
+             ['TNPT','TPEG','TPP','TSRC'],['UNIB','VPTS','YIPP']]
+    reply_markup = ReplyKeyboardMarkup(tickers_list, one_time_keyboard=True)
+    update.message.reply_text('請選擇要查詢的股票', reply_markup=reply_markup)
+
 dispatcher.add_handler(CommandHandler('start', start))
 dispatcher.add_handler(MessageHandler(Filters.text, echo))
+dispatcher.add_handler(CommandHandler('ticker', tickers))
 
 who = '<your chat id>'
 text = 'Neopest stocks 測試'
