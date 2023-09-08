@@ -1,5 +1,6 @@
 from telegram.ext import Updater
-from telegram.ext import CommandHandler
+from telegram.ext import CommandHandler, MessageHandler, Filters
+from telegram import InlineKeyboardMarkup, InlineKeyboardButton
 
 bot_token = '<your token>'
 
@@ -17,7 +18,30 @@ def start(bot, update):
     chat = message['chat']
     update.message.reply_text(text = 'HI ' + str(chat['id']))
 
+def echo(bot, update):
+    message = update.message
+    text = message.text
+    if text in stock_lst:
+        update.message.reply_text(text,
+                                reply_markup = InlineKeyboardMarkup([[
+                                    InlineKeyboardButton('Buy',
+                                                        url = 'https://www.neopets.com/stockmarket.phtml?type=buy&ticker=' + text),
+                                    InlineKeyboardButton('1 Day',
+                                                        url = 'https://neostocks.info/tickers/' + text),
+                                    InlineKeyboardButton('5 Day',
+                                                        url = 'https://neostocks.info/tickers/' + text + '?period=5d'),
+                                    InlineKeyboardButton('1 Month',
+                                                        url = 'https://neostocks.info/tickers/' + text + '?period=1m'),
+                                    InlineKeyboardButton('All',
+                                                        url = 'https://neostocks.info/tickers/' + text + '?period=all')
+                                ]])
+        )
+    else:
+        text = '請輸入正確指令'
+        update.message.reply_text(text = text)
+
 dispatcher.add_handler(CommandHandler('start', start))
+dispatcher.add_handler(MessageHandler(Filters.text, echo))
 
 who = '<your chat id>'
 text = 'Neopest stocks 測試'
