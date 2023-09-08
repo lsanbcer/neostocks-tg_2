@@ -69,9 +69,45 @@ def tickers(bot, update):
     reply_markup = ReplyKeyboardMarkup(tickers_list, one_time_keyboard=True)
     update.message.reply_text('請選擇要查詢的股票', reply_markup=reply_markup)
 
+def receive_file(update, context):
+    user_id = str(update.message.from_user.id)
+    if update.message.document and update.message.document.mime_type == 'text/plain':
+        file = context.bot.get_file(update.message.document.file_id)
+        file.download(f"{user_id}.txt")
+        update.message.reply_text("已成功接收並儲存文件。")
+
+def custom(update, context):
+    user_id = str(update.message.from_user.id)
+    tickers = []
+    path = f"{user_id}.txt"
+    with open(path) as f:
+        for line in f.readlines():
+            s = line.split('\n')
+            tickers.append(s[0])
+    for ticker in tickers:
+        curr = ticker_curr(ticker)
+        update.message.reply_text(ticker + '  目前價格  ' + curr,
+                                reply_markup = InlineKeyboardMarkup([[
+                                    InlineKeyboardButton('Buy',
+                                                        url = 'https://www.neopets.com/stockmarket.phtml?type=buy&ticker=' + ticker),
+                                    InlineKeyboardButton('1 Day',
+                                                        url = 'https://neostocks.info/tickers/' + ticker),
+                                    InlineKeyboardButton('5 Day',
+                                                        url = 'https://neostocks.info/tickers/' + ticker + '?period=5d'),
+                                    InlineKeyboardButton('1 Month',
+                                                        url = 'https://neostocks.info/tickers/' + ticker + '?period=1m'),
+                                    InlineKeyboardButton('All',
+                                                        url = 'https://neostocks.info/tickers/' + ticker + '?period=all')
+                                ]])
+        )
+
+
 dispatcher.add_handler(CommandHandler('start', start))
 dispatcher.add_handler(MessageHandler(Filters.text, echo))
 dispatcher.add_handler(CommandHandler('ticker', tickers))
+dispatcher.add_handler(MessageHandler(Filters.document, receive_file))
+dispatcher.add_handler(CommandHandler('my', custom))
+
 
 who = '<your chat id>'
 text = 'Neopest stocks 測試'
